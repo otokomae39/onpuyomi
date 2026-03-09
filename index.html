@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon-32x32.png" type="image/png">
-    <link rel="icon" href="/favicon-16x16.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>おんぷよみゲーム</title>
@@ -29,10 +24,13 @@
         .mute-btn { padding: 6px 12px; font-size: 11px; background: #f39c12; color: white; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; min-width: 80px; }
         .mute-btn.active { background: #e74c3c; }
         .result-msg { font-size: 24px; font-weight: bold; height: 36px; margin-top: 12px; }
-        #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 50; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .result-title { font-size: 32px; margin-bottom: 20px; color: #f1c40f; }
+        
+        /* スコアポップアップ表示 */
+        #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .result-title { font-size: 32px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
         .result-score { font-size: 64px; font-weight: bold; margin-bottom: 30px; color: white; }
-        .result-close-btn { padding: 15px 40px; font-size: 20px; background: #2ecc71; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: bold; }
+        .result-close-btn { padding: 15px 40px; font-size: 20px; background: #2ecc71; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #27ae60; }
+        
         #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff0f5; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 10; overflow-y: auto; padding-top: 32px; padding-bottom: 32px; }
         .game-title { font-size: 26px; font-weight: bold; margin-bottom: 4px; color: #e67e22; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
         .credit { font-size: 14px; color: #7f8c8d; margin-bottom: 16px; letter-spacing: 1px; }
@@ -67,9 +65,9 @@
 <body>
 
 <div id="result-overlay">
-    <div class="result-title">終了！</div>
+    <div class="result-title">タイムアップ！</div>
     <div id="final-score" class="result-score">0点</div>
-    <button class="result-close-btn" onclick="closeResult()">とじる</button>
+    <button class="result-close-btn" onclick="closeResult()">メニューに戻る</button>
 </div>
 
 <div id="modal-overlay">
@@ -173,6 +171,8 @@
 <script>
     const { Renderer, Stave, StaveNote, Voice, Formatter, StaveConnector, GhostNote } = Vex.Flow;
     let isMuted = false, audioCtx = null, isCheckMode = false, checkIdx = 0, noteCount = 1;
+    let currentNotes = [], noteObjects = [], currentInputIdx = 0, currentClef = "treble", selectedDifficulty = "full", selectedMode = "mixed", score = 0, timeLeft = 60, timerId = null, grandStaveData = null, isWaiting = false;
+    let checkPool = [];
 
     function toggleMute() {
         isMuted = !isMuted;
@@ -181,7 +181,11 @@
         btn.classList.toggle("active", isMuted);
     }
     function toggleModal(show) { document.getElementById("modal-overlay").style.display = show ? "flex" : "none"; }
-    function closeResult() { document.getElementById("result-overlay").style.display = "none"; stopGame(); }
+    
+    function closeResult() {
+        document.getElementById("result-overlay").style.display = "none";
+        stopGame();
+    }
 
     function showMenu(count) {
         noteCount = count;
@@ -196,15 +200,10 @@
             addOption(timeSelect, "60", "1分", true);
             addOption(timeSelect, "180", "3分");
             addOption(timeSelect, "300", "5分");
-            addOption(timeSelect, "600", "10分");
-            addOption(timeSelect, "900", "15分");
         } else {
             addOption(timeSelect, "60", "1分");
             addOption(timeSelect, "180", "3分", true);
             addOption(timeSelect, "300", "5分");
-            addOption(timeSelect, "600", "10分");
-            addOption(timeSelect, "900", "15分");
-            addOption(timeSelect, "1800", "30分");
         }
     }
 
@@ -248,9 +247,6 @@
         }
     };
 
-    let checkPool = [];
-    let currentNotes = [], noteObjects = [], currentInputIdx = 0, currentClef = "treble", selectedDifficulty = "full", selectedMode = "mixed", score = 0, timeLeft = 60, timerId = null, grandStaveData = null, isWaiting = false;
-
     function playDingDong() {
         if (isMuted) return;
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -264,20 +260,27 @@
         playTone(523.25, now, 0.4); playTone(659.25, now, 0.4); playTone(783.99, now, 0.4); playTone(523.25, now + 0.15, 0.8);
     }
 
+    // ホイッスル音「ピピー」
     function playWhistle() {
         if (isMuted) return;
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const now = audioCtx.currentTime;
         const whistle = (start) => {
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.type = 'square'; whistle.frequency.setValueAtTime(2500, start);
-            gain.gain.setValueAtTime(0.1, start); gain.gain.linearRampToValueAtTime(0, start + 0.3);
-            osc.connect(gain).connect(audioCtx.destination); osc.start(start); osc.stop(start + 0.3);
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(2200, start); // 高い音
+            gain.gain.setValueAtTime(0.15, start); 
+            gain.gain.linearRampToValueAtTime(0, start + 0.3);
+            osc.connect(gain).connect(audioCtx.destination); 
+            osc.start(start); 
+            osc.stop(start + 0.3);
         };
-        whistle(now); whistle(now + 0.4);
+        whistle(now); 
+        whistle(now + 0.4);
     }
 
     function generateNote() {
+        if (timeLeft <= 0 && !isCheckMode) return; // 終了時は生成しない
         isWaiting = false; currentInputIdx = 0; document.getElementById("boo").innerHTML = "";
         
         currentNotes = [];
@@ -325,6 +328,7 @@
     }
 
     function redrawNotes() {
+        if (!grandStaveData) return;
         const context = grandStaveData.context;
         const svg = document.querySelector("#boo svg");
         svg.querySelectorAll("g.vf-stavenote").forEach(p => p.remove());
@@ -358,7 +362,7 @@
     }
 
     function checkAnswer(answer) {
-        if (isWaiting) return;
+        if (isWaiting || (timeLeft <= 0 && !isCheckMode)) return;
         const msgEl = document.getElementById("msg");
         const targetNoteData = currentNotes[currentInputIdx];
 
@@ -372,7 +376,10 @@
                 isWaiting = true; playDingDong(); score++; document.getElementById("score").innerText = score;
                 msgEl.innerText = "◎せいかい";
                 msgEl.style.color = "#2ecc71";
-                setTimeout(() => { msgEl.innerText = ""; generateNote(); }, 600);
+                setTimeout(() => { 
+                    msgEl.innerText = ""; 
+                    if (timeLeft > 0 || isCheckMode) generateNote(); 
+                }, 600);
             } else {
                 currentClef = currentNotes[currentInputIdx].clef;
                 document.getElementById("clef-indicator").innerText = (currentClef === "treble" ? "ト音" : "ヘ音");
@@ -398,13 +405,19 @@
         isCheckMode = false; selectedDifficulty = difficulty; selectedMode = mode;
         timeLeft = parseInt(document.getElementById("game-time-select").value);
         score = 0; document.getElementById("score").innerText = score;
+        document.getElementById("timer").innerText = timeLeft;
         document.getElementById("start-screen").style.display = "none";
         document.getElementById("timer-display").style.visibility = "visible";
-        generateNote(); clearInterval(timerId);
+        generateNote(); 
+        
+        clearInterval(timerId);
         timerId = setInterval(() => {
-            timeLeft--; document.getElementById("timer").innerText = timeLeft;
+            timeLeft--; 
+            document.getElementById("timer").innerText = timeLeft;
             if (timeLeft <= 0) { 
-                clearInterval(timerId); playWhistle(); 
+                clearInterval(timerId); 
+                playWhistle(); 
+                // スコアをポップアップ表示
                 document.getElementById("final-score").innerText = score + "点";
                 document.getElementById("result-overlay").style.display = "flex";
             }
@@ -420,32 +433,19 @@
         checkPool = [];
 
         if (difficulty === 'full') {
-            // A1 ～ E3 まではヘ音
             basePool.filter(n => n.val < 24).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n));
-                copy.clef = "bass";
-                checkPool.push(copy);
+                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "bass"; checkPool.push(copy);
             });
-            // F3 ～ G4 はまずヘ音で追加
             basePool.filter(n => n.val >= 24 && n.val <= 32).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n));
-                copy.clef = "bass";
-                checkPool.push(copy);
+                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "bass"; checkPool.push(copy);
             });
-            // F3 ～ G4 を同じ順番でト音でも追加
             basePool.filter(n => n.val >= 24 && n.val <= 32).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n));
-                copy.clef = "treble";
-                checkPool.push(copy);
+                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "treble"; checkPool.push(copy);
             });
-            // A4 ～ G6 はト音
             basePool.filter(n => n.val > 32).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n));
-                copy.clef = "treble";
-                checkPool.push(copy);
+                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "treble"; checkPool.push(copy);
             });
         } else {
-            // 他の難易度は通常の混合
             basePool.forEach(n => checkPool.push(JSON.parse(JSON.stringify(n))));
         }
 
@@ -453,8 +453,15 @@
         document.getElementById("start-screen").style.display = "none";
         generateNote();
     }
-    function stopGame() { clearInterval(timerId); document.getElementById("start-screen").style.display = "flex"; }
-    function quitGame() { if (confirm("戻りますか？")) stopGame(); }
+
+    function stopGame() { 
+        clearInterval(timerId); 
+        document.getElementById("start-screen").style.display = "flex"; 
+    }
+    
+    function quitGame() { 
+        if (confirm("戻りますか？")) stopGame(); 
+    }
 </script>
 </body>
 </html>
