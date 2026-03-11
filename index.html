@@ -22,10 +22,13 @@
         .mute-btn { padding: 6px 12px; font-size: 11px; background: #f39c12; color: white; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; min-width: 80px; }
         .mute-btn.active { background: #e74c3c; }
         .result-msg { font-size: 24px; font-weight: bold; height: 36px; margin-top: 12px; }
+        
+        /* 結果ポップアップ */
         #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; flex-direction: column; justify-content: center; align-items: center; color: white; }
         .result-title { font-size: 32px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
         .result-score { font-size: 64px; font-weight: bold; margin-bottom: 30px; color: white; }
         .result-close-btn { padding: 15px 40px; font-size: 20px; background: #2ecc71; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: bold; }
+        
         #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff0f5; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 10; overflow-y: auto; padding-top: 32px; padding-bottom: 32px; }
         .game-title { font-size: 26px; font-weight: bold; margin-bottom: 4px; color: #e67e22; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
         .credit { font-size: 14px; color: #7f8c8d; margin-bottom: 16px; letter-spacing: 1px; }
@@ -34,12 +37,16 @@
         .choice-btn { padding: 12px 20px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; border-radius: 12px; background: #3498db; color: white; transition: 0.3s; min-width: 128px; }
         .choice-btn.active { background: #f1c40f; color: #2c3e50; }
         #menu-area { display: none; width: 100%; max-width: 320px; }
+        
+        /* モーダル関連 */
         #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 30; justify-content: center; align-items: center; }
         #info-modal { background: white; color: #333; width: 92%; max-width: 480px; padding: 16px; border-radius: 16px; text-align: left; max-height: 90vh; overflow-y: auto; }
         #info-modal h2 { font-size: 18px; margin: 0 0 10px 0; border-left: 4px solid #e67e22; padding-left: 8px; }
         .range-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px; }
         .range-table th, .range-table td { border: 1px solid #ddd; padding: 6px 4px; text-align: center; }
-        .range-table th { background: #f8f9fa; }
+        .range-table th { background: #f8f9fa; font-weight: bold; }
+        .cat-cell { font-weight: bold; background: #fff5f7; width: 50px; }
+        
         .type-column { background: white; border: 2px solid #ffccd5; padding: 16px; border-radius: 16px; width: 100%; box-sizing: border-box;}
         .time-select { margin-bottom: 16px; background: #fef0f2; padding: 8px; border-radius: 8px; font-size: 13px; }
         .mode-section { margin-bottom: 12px; }
@@ -71,10 +78,17 @@
                 <tr><th>カテゴリ</th><th>モード</th><th>音域</th></tr>
             </thead>
             <tbody>
-                <tr><td rowspan="3">基礎</td><td>へ音</td><td>F2 ～ C4</td></tr>
+                <tr><td rowspan="3" class="cat-cell">基礎</td><td>へ音</td><td>F2 ～ C4</td></tr>
                 <tr><td>ト音</td><td>C4 ～ A5</td></tr>
                 <tr><td>まとめ</td><td>F2 ～ A5</td></tr>
-                <tr><td rowspan="3">全範囲</td><td>へ音</td><td>A1 ～ G4</td></tr>
+                
+                <tr><td rowspan="5" class="cat-cell">加線</td><td>へ音5線下</td><td>A1 ～ E2</td></tr>
+                <tr><td>へ音5線上</td><td>C4 ～ G4</td></tr>
+                <tr><td>ト音5線下</td><td>F3 ～ C4</td></tr>
+                <tr><td>ト音5線上</td><td>A5 ～ G6</td></tr>
+                <tr><td>まとめ</td><td style="font-size: 9px;">A1-E2, C4-G4(へ) / F3-C4, A5-G6(ト)</td></tr>
+                
+                <tr><td rowspan="3" class="cat-cell">全範囲</td><td>へ音</td><td>A1 ～ G4</td></tr>
                 <tr><td>ト音</td><td>F3 ～ G6</td></tr>
                 <tr><td>まとめ</td><td>A1 ～ G6</td></tr>
             </tbody>
@@ -84,7 +98,7 @@
 </div>
 
 <div id="start-screen">
-    <div class="game-title">おんぷよみゲーム2</div>
+    <div class="game-title">おんぷよみゲームv2</div>
     <div class="credit">＜作成：パピヨン音楽教室＞</div>
     <button class="info-trigger-btn" onclick="toggleModal(true)">ℹ 音域詳細表</button>
     <div class="main-choice-row">
@@ -161,7 +175,7 @@
     let isMuted = false, audioCtx = null, isCheckMode = false, checkIdx = 0, noteCount = 1;
     let currentNotes = [], noteObjects = [], currentInputIdx = 0, currentClef = "treble", selectedDifficulty = "full", selectedMode = "mixed", score = 0, timeLeft = 60, timerId = null, grandStaveData = null, isWaiting = false;
     let checkPool = [];
-    let lastNoteValue = null;
+    let lastNoteValue = null; // 連続防止用
 
     function toggleMute() {
         isMuted = !isMuted;
@@ -181,9 +195,9 @@
         document.getElementById("choice-3").classList.toggle("active", count === 3);
         
         timeSelect.innerHTML = "";
-        // デフォルトで「1分 (60)」が選択されるように設定
-        const times = [60, 180, 300, 600, 900];
+        const times = [60, 180, 300, 600];
         times.forEach((t) => {
+            // 60（1分）をデフォルトで選択
             addOption(timeSelect, t, (t/60) + "分", t === 60);
         });
     }
@@ -276,7 +290,7 @@
                 do {
                     n = JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
                     attempts++;
-                } while (n.val === tempLastValue && attempts < 20);
+                } while (n.val === tempLastValue && attempts < 20); // 連続防止
                 if (selectedDifficulty === "full" && selectedMode === "mixed") {
                     if (n.val < 24) n.clef = "bass";
                     else if (n.val > 32) n.clef = "treble";
@@ -372,7 +386,11 @@
         generateNote(); clearInterval(timerId);
         timerId = setInterval(() => {
             timeLeft--; document.getElementById("timer").innerText = timeLeft;
-            if (timeLeft <= 0) { clearInterval(timerId); playWhistle(); document.getElementById("final-score").innerText = score + "点"; document.getElementById("result-overlay").style.display = "flex"; }
+            if (timeLeft <= 0) { 
+                clearInterval(timerId); playWhistle(); 
+                document.getElementById("final-score").innerText = score + "点";
+                document.getElementById("result-overlay").style.display = "flex";
+            }
         }, 1000);
     }
 
