@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>おんぷよみゲーム</title>
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" href="favicon.ico" sizes="any">
-    <link rel="icon" href="favicon-32x32.png" type="image/png">
-    <link rel="icon" href="favicon-16x16.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #fff0f5; margin: 0; padding: 16px 8px; }
@@ -19,9 +14,7 @@
         #score-display { font-size: 18px; font-weight: bold; }
         #timer-display { font-size: 16px; font-weight: bold; color: #e74c3c; }
         #stage { background: #fff; margin: 12px 0; min-height: 256px; display: flex; justify-content: center; align-items: center; overflow: hidden;}
-        
         .btn-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 26px; width: 100%; }
-        
         .ans-btn { padding: 18px 0; font-size: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; background: #4a90e2; color: white; transition: 0.2s; box-shadow: 0 3px 0 #357ebd; display: flex; justify-content: center; align-items: center; }
         .ans-btn:hover { background: #357ebd; }
         .ans-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #357ebd; }
@@ -29,29 +22,24 @@
         .mute-btn { padding: 6px 12px; font-size: 11px; background: #f39c12; color: white; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; min-width: 80px; }
         .mute-btn.active { background: #e74c3c; }
         .result-msg { font-size: 24px; font-weight: bold; height: 36px; margin-top: 12px; }
-        
-        /* スコアポップアップ表示 */
         #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; flex-direction: column; justify-content: center; align-items: center; color: white; }
         .result-title { font-size: 32px; margin-bottom: 20px; color: #f1c40f; font-weight: bold; }
         .result-score { font-size: 64px; font-weight: bold; margin-bottom: 30px; color: white; }
-        .result-close-btn { padding: 15px 40px; font-size: 20px; background: #2ecc71; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #27ae60; }
-        
+        .result-close-btn { padding: 15px 40px; font-size: 20px; background: #2ecc71; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: bold; }
         #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff0f5; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 10; overflow-y: auto; padding-top: 32px; padding-bottom: 32px; }
         .game-title { font-size: 26px; font-weight: bold; margin-bottom: 4px; color: #e67e22; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
         .credit { font-size: 14px; color: #7f8c8d; margin-bottom: 16px; letter-spacing: 1px; }
-        .info-trigger-btn { background: #546e7a; color: white; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer; font-weight: bold; margin-bottom: 16px; transition: 0.3s; font-size: 13px;}
+        .info-trigger-btn { background: #546e7a; color: white; border: none; padding: 8px 16px; border-radius: 16px; cursor: pointer; font-weight: bold; margin-bottom: 16px; font-size: 13px;}
         .main-choice-row { display: flex; gap: 12px; margin-bottom: 24px; }
         .choice-btn { padding: 12px 20px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; border-radius: 12px; background: #3498db; color: white; transition: 0.3s; min-width: 128px; }
         .choice-btn.active { background: #f1c40f; color: #2c3e50; }
         #menu-area { display: none; width: 100%; max-width: 320px; }
-        
         #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 30; justify-content: center; align-items: center; }
         #info-modal { background: white; color: #333; width: 92%; max-width: 480px; padding: 16px; border-radius: 16px; text-align: left; max-height: 90vh; overflow-y: auto; }
         #info-modal h2 { font-size: 18px; margin: 0 0 10px 0; border-left: 4px solid #e67e22; padding-left: 8px; }
         .range-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px; }
         .range-table th, .range-table td { border: 1px solid #ddd; padding: 6px 4px; text-align: center; }
         .range-table th { background: #f8f9fa; }
-        .range-table td.cat-cell { font-weight: bold; background: #fff5f7; }
         .type-column { background: white; border: 2px solid #ffccd5; padding: 16px; border-radius: 16px; width: 100%; box-sizing: border-box;}
         .time-select { margin-bottom: 16px; background: #fef0f2; padding: 8px; border-radius: 8px; font-size: 13px; }
         .mode-section { margin-bottom: 12px; }
@@ -83,15 +71,10 @@
                 <tr><th>カテゴリ</th><th>モード</th><th>音域</th></tr>
             </thead>
             <tbody>
-                <tr><td rowspan="3" class="cat-cell">基礎</td><td>へ音</td><td>F2 ～ C4</td></tr>
+                <tr><td rowspan="3">基礎</td><td>へ音</td><td>F2 ～ C4</td></tr>
                 <tr><td>ト音</td><td>C4 ～ A5</td></tr>
                 <tr><td>まとめ</td><td>F2 ～ A5</td></tr>
-                <tr><td rowspan="5" class="cat-cell">加線</td><td>へ音5線下</td><td>A1 ～ E2</td></tr>
-                <tr><td>へ音5線上</td><td>C4 ～ G4</td></tr>
-                <tr><td>ト音5線下</td><td>F3 ～ C4</td></tr>
-                <tr><td>ト音5線上</td><td>A5 ～ G6</td></tr>
-                <tr><td>まとめ</td><td style="font-size: 9px;">A1-E2, C4-G4(へ) / F3-C4, A5-G6(ト)</td></tr>
-                <tr><td rowspan="3" class="cat-cell">全範囲</td><td>へ音</td><td>A1 ～ G4</td></tr>
+                <tr><td rowspan="3">全範囲</td><td>へ音</td><td>A1 ～ G4</td></tr>
                 <tr><td>ト音</td><td>F3 ～ G6</td></tr>
                 <tr><td>まとめ</td><td>A1 ～ G6</td></tr>
             </tbody>
@@ -178,6 +161,7 @@
     let isMuted = false, audioCtx = null, isCheckMode = false, checkIdx = 0, noteCount = 1;
     let currentNotes = [], noteObjects = [], currentInputIdx = 0, currentClef = "treble", selectedDifficulty = "full", selectedMode = "mixed", score = 0, timeLeft = 60, timerId = null, grandStaveData = null, isWaiting = false;
     let checkPool = [];
+    let lastNoteValue = null;
 
     function toggleMute() {
         isMuted = !isMuted;
@@ -186,11 +170,7 @@
         btn.classList.toggle("active", isMuted);
     }
     function toggleModal(show) { document.getElementById("modal-overlay").style.display = show ? "flex" : "none"; }
-    
-    function closeResult() {
-        document.getElementById("result-overlay").style.display = "none";
-        stopGame();
-    }
+    function closeResult() { document.getElementById("result-overlay").style.display = "none"; stopGame(); }
 
     function showMenu(count) {
         noteCount = count;
@@ -201,15 +181,11 @@
         document.getElementById("choice-3").classList.toggle("active", count === 3);
         
         timeSelect.innerHTML = "";
-        if (count === 1) {
-            addOption(timeSelect, "60", "1分", true);
-            addOption(timeSelect, "180", "3分");
-            addOption(timeSelect, "300", "5分");
-        } else {
-            addOption(timeSelect, "60", "1分");
-            addOption(timeSelect, "180", "3分", true);
-            addOption(timeSelect, "300", "5分");
-        }
+        // デフォルトで「1分 (60)」が選択されるように設定
+        const times = [60, 180, 300, 600, 900];
+        times.forEach((t) => {
+            addOption(timeSelect, t, (t/60) + "分", t === 60);
+        });
     }
 
     function addOption(select, value, text, selected = false) {
@@ -265,30 +241,24 @@
         playTone(523.25, now, 0.4); playTone(659.25, now, 0.4); playTone(783.99, now, 0.4); playTone(523.25, now + 0.15, 0.8);
     }
 
-    // ホイッスル音「ピピー」
     function playWhistle() {
         if (isMuted) return;
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const now = audioCtx.currentTime;
         const whistle = (start) => {
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.type = 'square'; 
-            osc.frequency.setValueAtTime(2200, start); // 高い音
-            gain.gain.setValueAtTime(0.15, start); 
-            gain.gain.linearRampToValueAtTime(0, start + 0.3);
-            osc.connect(gain).connect(audioCtx.destination); 
-            osc.start(start); 
-            osc.stop(start + 0.3);
+            osc.type = 'square'; osc.frequency.setValueAtTime(2200, start);
+            gain.gain.setValueAtTime(0.15, start); gain.gain.linearRampToValueAtTime(0, start + 0.3);
+            osc.connect(gain).connect(audioCtx.destination); osc.start(start); osc.stop(start + 0.3);
         };
-        whistle(now); 
-        whistle(now + 0.4);
+        whistle(now); whistle(now + 0.4);
     }
 
     function generateNote() {
-        if (timeLeft <= 0 && !isCheckMode) return; // 終了時は生成しない
+        if (timeLeft <= 0 && !isCheckMode) return;
         isWaiting = false; currentInputIdx = 0; document.getElementById("boo").innerHTML = "";
-        
         currentNotes = [];
+
         if (isCheckMode) {
             if (checkIdx >= checkPool.length) { alert("全ての音を確認しました"); stopGame(); return; }
             for(let i=0; i<noteCount; i++) {
@@ -299,15 +269,23 @@
             }
         } else {
             const pool = rangeData[selectedDifficulty][selectedMode];
-            for(let i=0; i<noteCount; i++) { 
-                let n = JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
+            let tempLastValue = lastNoteValue;
+            for(let i=0; i<noteCount; i++) {
+                let n;
+                let attempts = 0;
+                do {
+                    n = JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
+                    attempts++;
+                } while (n.val === tempLastValue && attempts < 20);
                 if (selectedDifficulty === "full" && selectedMode === "mixed") {
                     if (n.val < 24) n.clef = "bass";
                     else if (n.val > 32) n.clef = "treble";
                     else n.clef = Math.random() < 0.5 ? "treble" : "bass";
                 }
                 currentNotes.push(n);
+                tempLastValue = n.val; 
             }
+            lastNoteValue = currentNotes[currentNotes.length - 1].val;
         }
 
         currentClef = currentNotes[0].clef;
@@ -328,7 +306,6 @@
             sn.setStyle({ fillStyle: "#3498db", strokeStyle: "#3498db" });
             return sn;
         });
-
         redrawNotes();
     }
 
@@ -337,10 +314,7 @@
         const context = grandStaveData.context;
         const svg = document.querySelector("#boo svg");
         svg.querySelectorAll("g.vf-stavenote").forEach(p => p.remove());
-
-        const trebleVoiceNotes = [];
-        const bassVoiceNotes = [];
-
+        const trebleVoiceNotes = []; const bassVoiceNotes = [];
         for (let i = 0; i < currentNotes.length; i++) {
             if (currentNotes[i].clef === "treble") {
                 trebleVoiceNotes.push(noteObjects[i]);
@@ -350,12 +324,10 @@
                 trebleVoiceNotes.push(new GhostNote({ duration: "q" }));
             }
         }
-
         const voiceT = new Voice({ num_beats: currentNotes.length, beat_value: 4 });
         voiceT.addTickables(trebleVoiceNotes);
         const voiceB = new Voice({ num_beats: currentNotes.length, beat_value: 4 });
         voiceB.addTickables(bassVoiceNotes);
-
         new Formatter().joinVoices([voiceT, voiceB]).format([voiceT, voiceB], 150);
         voiceT.draw(context, grandStaveData.staves.top);
         voiceB.draw(context, grandStaveData.staves.bottom);
@@ -370,38 +342,21 @@
         if (isWaiting || (timeLeft <= 0 && !isCheckMode)) return;
         const msgEl = document.getElementById("msg");
         const targetNoteData = currentNotes[currentInputIdx];
-
         if (answer === targetNoteData.name) {
             noteObjects[currentInputIdx].setStyle({ fillStyle: "#2ecc71", strokeStyle: "#2ecc71" });
-            currentInputIdx++; 
-            updateInputStatus();
-            redrawNotes();
-
+            currentInputIdx++; updateInputStatus(); redrawNotes();
             if (currentInputIdx === currentNotes.length) {
                 isWaiting = true; playDingDong(); score++; document.getElementById("score").innerText = score;
-                msgEl.innerText = "◎せいかい";
-                msgEl.style.color = "#2ecc71";
-                setTimeout(() => { 
-                    msgEl.innerText = ""; 
-                    if (timeLeft > 0 || isCheckMode) generateNote(); 
-                }, 600);
+                msgEl.innerText = "◎せいかい"; msgEl.style.color = "#2ecc71";
+                setTimeout(() => { msgEl.innerText = ""; if (timeLeft > 0 || isCheckMode) generateNote(); }, 600);
             } else {
                 currentClef = currentNotes[currentInputIdx].clef;
                 document.getElementById("clef-indicator").innerText = (currentClef === "treble" ? "ト音" : "ヘ音");
             }
         } else {
-            isWaiting = true;
-            msgEl.innerText = "もういちど";
-            msgEl.style.color = "#e74c3c";
-            noteObjects[currentInputIdx].setStyle({ fillStyle: "#e74c3c", strokeStyle: "#e74c3c" });
-            redrawNotes();
-            
-            setTimeout(() => {
-                msgEl.innerText = "";
-                noteObjects[currentInputIdx].setStyle({ fillStyle: "#3498db", strokeStyle: "#3498db" });
-                redrawNotes();
-                isWaiting = false;
-            }, 600);
+            isWaiting = true; msgEl.innerText = "もういちど"; msgEl.style.color = "#e74c3c";
+            noteObjects[currentInputIdx].setStyle({ fillStyle: "#e74c3c", strokeStyle: "#e74c3c" }); redrawNotes();
+            setTimeout(() => { msgEl.innerText = ""; noteObjects[currentInputIdx].setStyle({ fillStyle: "#3498db", strokeStyle: "#3498db" }); redrawNotes(); isWaiting = false; }, 600);
         }
     }
 
@@ -409,23 +364,15 @@
         if (audioCtx) audioCtx.resume();
         isCheckMode = false; selectedDifficulty = difficulty; selectedMode = mode;
         timeLeft = parseInt(document.getElementById("game-time-select").value);
-        score = 0; document.getElementById("score").innerText = score;
+        score = 0; lastNoteValue = null;
+        document.getElementById("score").innerText = score;
         document.getElementById("timer").innerText = timeLeft;
         document.getElementById("start-screen").style.display = "none";
         document.getElementById("timer-display").style.visibility = "visible";
-        generateNote(); 
-        
-        clearInterval(timerId);
+        generateNote(); clearInterval(timerId);
         timerId = setInterval(() => {
-            timeLeft--; 
-            document.getElementById("timer").innerText = timeLeft;
-            if (timeLeft <= 0) { 
-                clearInterval(timerId); 
-                playWhistle(); 
-                // スコアをポップアップ表示
-                document.getElementById("final-score").innerText = score + "点";
-                document.getElementById("result-overlay").style.display = "flex";
-            }
+            timeLeft--; document.getElementById("timer").innerText = timeLeft;
+            if (timeLeft <= 0) { clearInterval(timerId); playWhistle(); document.getElementById("final-score").innerText = score + "点"; document.getElementById("result-overlay").style.display = "flex"; }
         }, 1000);
     }
 
@@ -433,40 +380,20 @@
         if (audioCtx) audioCtx.resume();
         isCheckMode = true; checkIdx = 0; selectedDifficulty = difficulty;
         selectedMode = (difficulty === 'ledger') ? 'summary' : 'mixed';
-        
         const basePool = rangeData[selectedDifficulty][selectedMode];
         checkPool = [];
-
         if (difficulty === 'full') {
-            basePool.filter(n => n.val < 24).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "bass"; checkPool.push(copy);
-            });
-            basePool.filter(n => n.val >= 24 && n.val <= 32).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "bass"; checkPool.push(copy);
-            });
-            basePool.filter(n => n.val >= 24 && n.val <= 32).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "treble"; checkPool.push(copy);
-            });
-            basePool.filter(n => n.val > 32).forEach(n => {
-                let copy = JSON.parse(JSON.stringify(n)); copy.clef = "treble"; checkPool.push(copy);
-            });
-        } else {
-            basePool.forEach(n => checkPool.push(JSON.parse(JSON.stringify(n))));
-        }
-
+            basePool.filter(n => n.val < 24).forEach(n => { let copy = JSON.parse(JSON.stringify(n)); copy.clef = "bass"; checkPool.push(copy); });
+            basePool.filter(n => n.val >= 24 && n.val <= 32).forEach(n => { let copy = JSON.parse(JSON.stringify(n)); copy.clef = "bass"; checkPool.push(copy); });
+            basePool.filter(n => n.val >= 24 && n.val <= 32).forEach(n => { let copy = JSON.parse(JSON.stringify(n)); copy.clef = "treble"; checkPool.push(copy); });
+            basePool.filter(n => n.val > 32).forEach(n => { let copy = JSON.parse(JSON.stringify(n)); copy.clef = "treble"; checkPool.push(copy); });
+        } else { basePool.forEach(n => checkPool.push(JSON.parse(JSON.stringify(n)))); }
         document.getElementById("timer-display").style.visibility = "hidden";
         document.getElementById("start-screen").style.display = "none";
         generateNote();
     }
-
-    function stopGame() { 
-        clearInterval(timerId); 
-        document.getElementById("start-screen").style.display = "flex"; 
-    }
-    
-    function quitGame() { 
-        if (confirm("戻りますか？")) stopGame(); 
-    }
+    function stopGame() { clearInterval(timerId); document.getElementById("start-screen").style.display = "flex"; }
+    function quitGame() { if (confirm("戻りますか？")) stopGame(); }
 </script>
 </body>
 </html>
